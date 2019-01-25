@@ -77,11 +77,17 @@ class NpmClientRepository(private val project: Project) : ClientRepository {
         return when {
             (dependency is ExternalClientDependency
                     && dependency.version != null) -> runBlocking { doResolve(dependency) }
-            else -> ResolutionResult.NotFound()
+            else -> ResolutionResult.Error()
         }
     }
 
     private suspend fun doResolve(dependency: ExternalClientDependency): ResolutionResult {
+        if (dependency.version?.contains(Regex("[*^~xX><=|]|( - )")) != false)
+            return ResolutionResult.Warning(with (dependency) {
+               if (group == null) "Skipping dependency $name: variable version $version"
+                else "Skipping dependency @$group/$name: variable version $version"
+            })
+
         val resolveInfo = dependency.resolveInfo(cacheDirectory, registryUrl)
 
         if (!resolveInfo.downloadTarget.exists()) {
@@ -127,14 +133,15 @@ class NpmClientRepository(private val project: Project) : ClientRepository {
     }
 
     private suspend fun DependencyResolveInfo.downloadPackage(): ResolutionResult? {
+        project.logger.info("Downloading: $dependencyUrl")
         val call = client.call {
             method = HttpMethod.Get
             url(dependencyUrl)
         }
         when (call.response.status.value) {
             in 200..299 -> Unit
-            404, 405 -> return ResolutionResult.NotFound(NoSuchElementException(call.request.url.toString()))
-            in 500..599 -> return ResolutionResult.NotFound(RuntimeException(call.response.readText()))
+            404, 405 -> return ResolutionResult.Error(NoSuchElementException(call.request.url.toString()))
+            in 500..599 -> return ResolutionResult.Error(RuntimeException(call.response.readText()))
         }
 
         // copy to temporary file first
