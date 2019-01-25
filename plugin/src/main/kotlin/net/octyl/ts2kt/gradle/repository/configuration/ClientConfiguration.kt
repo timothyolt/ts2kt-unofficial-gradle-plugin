@@ -45,6 +45,7 @@ class ClientConfiguration(val name: String,
 
     val dependencies = mutableSetOf<ClientDependency>()
     val excluded = mutableSetOf<ClientDependency>()
+    val adjustments = mutableMapOf<ClientDependency, ClientDependency>()
 
     val allFiles: FileCollection by lazy {
         val deps = project.files()
@@ -59,7 +60,7 @@ class ClientConfiguration(val name: String,
 
             processedDependencies.add(next)
 
-            remainingDependencies += HashSet(transDeps).apply {
+            remainingDependencies += HashSet(transDeps.map { trans -> adjustments.getOrElse(trans) { trans } }).apply {
                 removeIf(processedDependencies::contains)
                 removeIf { trans ->
                     excluded.any { ex ->

@@ -83,4 +83,15 @@ open class Ts2ktUnofficialExtension(private val project: Project) {
     fun exclude(group: String?, name: String, version: String? = null) =
             exclude(DependencyFactory.createDependency(group, name, version))
 
+    private fun adjust(from: ExternalClientDependency, to:ExternalClientDependency) =
+            (from to to).also {
+                project.logger.warn("$from $to")
+                getClientConfiguration("ts2ktUnofficial").adjustments[from] = to
+            }
+
+    fun adjust(fromDependencyNotation: Any, toDependencyNotation: Any) =
+            adjust(DependencyFactory.createFromAnyNotation(fromDependencyNotation), DependencyFactory.createFromAnyNotation(toDependencyNotation))
+
+    fun adjust(fromGroup: String?, fromName: String, fromVersion: String? = null, toGroup: String?, toName: String, toVersion: String? = null) =
+            adjust(DependencyFactory.createDependency(fromGroup, fromName, fromVersion), DependencyFactory.createDependency(toGroup, toName, toVersion))
 }
