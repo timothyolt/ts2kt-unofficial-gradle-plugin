@@ -27,6 +27,8 @@ package net.octyl.ts2kt.gradle
 import net.octyl.ts2kt.gradle.repository.ClientRepository
 import net.octyl.ts2kt.gradle.repository.configuration.ClientConfiguration
 import net.octyl.ts2kt.gradle.repository.dependency.ClientDependencyHandlerScope
+import net.octyl.ts2kt.gradle.repository.dependency.DependencyFactory
+import net.octyl.ts2kt.gradle.repository.dependency.ExternalClientDependency
 import net.octyl.ts2kt.gradle.util.field
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.property
@@ -69,5 +71,16 @@ open class Ts2ktUnofficialExtension(private val project: Project) {
     fun dependencies(block: ClientDependencyHandlerScope.() -> Unit) {
         ClientDependencyHandlerScope(this).block()
     }
+
+    private fun dependency(dependency: ExternalClientDependency) =
+            dependency.also {
+                getClientConfiguration("ts2ktUnofficial").dependencies += it
+            }
+
+    fun dependency(dependencyNotation: Any) =
+            dependency(DependencyFactory.createFromAnyNotation(dependencyNotation))
+
+    fun dependency(group: String?, name: String, version: String? = null) =
+            dependency(DependencyFactory.createDependency(group, name, version))
 
 }
