@@ -44,6 +44,7 @@ class ClientConfiguration(val name: String,
     private val logger = Logger.getLogger(javaClass)
 
     val dependencies = mutableSetOf<ClientDependency>()
+    val excluded = mutableSetOf<ClientDependency>()
 
     val allFiles: FileCollection by lazy {
         val deps = project.files()
@@ -60,6 +61,16 @@ class ClientConfiguration(val name: String,
 
             remainingDependencies += HashSet(transDeps).apply {
                 removeIf(processedDependencies::contains)
+                removeIf { trans ->
+                    excluded.any { ex ->
+                        // only group: exclude by group
+                        (ex.group != null && ex.name == null && ex.group == trans.group) ||
+                        // name, no version: exclude by group/name
+                        (ex.name != null && ex.version == null && ex.group == trans.group && ex.name == trans.name) ||
+                        // name and version: exclude by group/name/version
+                        (ex.name != null && ex.version != null && ex.group == trans.group && ex.name == trans.name && ex.version == trans.version)
+                    }
+                }
             }
         }
 
