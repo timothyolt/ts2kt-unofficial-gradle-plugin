@@ -27,6 +27,8 @@ package net.octyl.ts2kt.gradle
 import net.octyl.ts2kt.gradle.repository.ClientRepository
 import net.octyl.ts2kt.gradle.repository.configuration.ClientConfiguration
 import net.octyl.ts2kt.gradle.repository.dependency.ClientDependencyHandlerScope
+import net.octyl.ts2kt.gradle.repository.dependency.DependencyFactory
+import net.octyl.ts2kt.gradle.repository.dependency.ExternalClientDependency
 import net.octyl.ts2kt.gradle.util.field
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.property
@@ -70,4 +72,26 @@ open class Ts2ktUnofficialExtension(private val project: Project) {
         ClientDependencyHandlerScope(this).block()
     }
 
+    private fun exclude(dependency: ExternalClientDependency) =
+            dependency.also {
+                getClientConfiguration("ts2ktUnofficial").excluded += it
+            }
+
+    fun exclude(dependencyNotation: Any) =
+            exclude(DependencyFactory.createFromAnyNotation(dependencyNotation))
+
+    fun exclude(group: String?, name: String, version: String? = null) =
+            exclude(DependencyFactory.createDependency(group, name, version))
+
+    private fun adjust(from: ExternalClientDependency, to:ExternalClientDependency) =
+            (from to to).also {
+                project.logger.warn("$from $to")
+                getClientConfiguration("ts2ktUnofficial").adjustments[from] = to
+            }
+
+    fun adjust(fromDependencyNotation: Any, toDependencyNotation: Any) =
+            adjust(DependencyFactory.createFromAnyNotation(fromDependencyNotation), DependencyFactory.createFromAnyNotation(toDependencyNotation))
+
+    fun adjust(fromGroup: String?, fromName: String, fromVersion: String? = null, toGroup: String?, toName: String, toVersion: String? = null) =
+            adjust(DependencyFactory.createDependency(fromGroup, fromName, fromVersion), DependencyFactory.createDependency(toGroup, toName, toVersion))
 }

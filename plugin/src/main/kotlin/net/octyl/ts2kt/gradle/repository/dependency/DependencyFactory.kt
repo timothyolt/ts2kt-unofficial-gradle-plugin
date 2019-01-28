@@ -26,7 +26,7 @@ package net.octyl.ts2kt.gradle.repository.dependency
 
 object DependencyFactory {
     fun createDependency(group: String?,
-                         name: String,
+                         name: String?,
                          version: String? = null): ExternalClientDependency {
         val groupFixed = when {
             group.isNullOrBlank() -> null
