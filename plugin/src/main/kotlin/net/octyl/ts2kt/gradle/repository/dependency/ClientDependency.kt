@@ -32,6 +32,6 @@ import net.octyl.ts2kt.gradle.repository.ClientRepository
  */
 interface ClientDependency {
     val group: String?
-    val name: String
+    val name: String?
     val version: String?
 }
