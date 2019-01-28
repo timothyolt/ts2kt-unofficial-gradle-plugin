@@ -32,19 +32,5 @@ import org.gradle.api.file.RegularFileProperty
  * Adds `final` to some of the DefaultTask methods for Kotlin.
  */
 open class KotlinDefaultTask : DefaultTask() {
-    final override fun newOutputDirectory(): DirectoryProperty {
-        return super.newOutputDirectory()
-    }
 
-    final override fun newOutputFile(): RegularFileProperty {
-        return super.newOutputFile()
-    }
-
-    final override fun newInputFile(): RegularFileProperty {
-        return super.newInputFile()
-    }
-
-    final override fun newInputDirectory(): DirectoryProperty {
-        return super.newInputDirectory()
-    }
 }
