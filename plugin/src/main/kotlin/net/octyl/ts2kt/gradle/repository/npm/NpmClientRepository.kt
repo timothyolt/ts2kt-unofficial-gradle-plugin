@@ -100,6 +100,12 @@ class NpmClientRepository(private val project: Project) : ClientRepository {
     }
 
     private suspend fun doResolve(dependency: ExternalClientDependency): ResolutionResult {
+        if (dependency.version?.contains(Regex("[*^~xX><=|]|( - )")) != false)
+            return ResolutionResult.Warning(with (dependency) {
+               if (group == null) "Skipping dependency $name: variable version $version"
+                else "Skipping dependency @$group/$name: variable version $version"
+            })
+
         val resolveInfo = dependency.resolveInfo(cacheDirectory, registryUrl)
 
         if (!resolveInfo.downloadTarget.exists()) {
@@ -145,6 +151,7 @@ class NpmClientRepository(private val project: Project) : ClientRepository {
     }
 
     private suspend fun DependencyResolveInfo.downloadPackage(): ResolutionResult? {
+        project.logger.info("Downloading: $dependencyUrl")
         val call = client.call {
             method = HttpMethod.Get
             url(dependencyUrl)

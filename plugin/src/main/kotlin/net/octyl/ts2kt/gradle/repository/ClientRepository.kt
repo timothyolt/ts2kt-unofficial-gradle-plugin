@@ -31,6 +31,8 @@ sealed class ResolutionResult {
     data class Success(val files: FileCollection,
                        val dependencies: List<ClientDependency> = listOf()) : ResolutionResult()
 
+    data class Warning(val message: String) : ResolutionResult()
+
     data class Error(val error: Throwable? = null) : ResolutionResult()
 }
 

@@ -88,6 +88,10 @@ class ClientConfiguration(val name: String,
                     outputFiles.from(resolved.files)
                     return resolved.dependencies
                 }
+                is ResolutionResult.Warning -> {
+                    project.logger.warn(resolved.message)
+                    return emptyList()
+                }
                 is ResolutionResult.Error -> errors.put(repo, resolved)
             })
         }
