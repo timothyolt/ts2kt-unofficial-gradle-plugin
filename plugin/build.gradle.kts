@@ -11,6 +11,7 @@ plugins {
     `java-gradle-plugin`
     `kotlin-dsl`
     kotlin("jvm") version embeddedKotlinVersion
+    `maven-publish`
 }
 
 inciseBlue {
